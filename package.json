@@ -3,6 +3,14 @@
   "version": "0.0.0",
   "private": true,
   "description": "My Shop — minimal front-end",
+  "homepage": "https://github.com/3ollnai/ProjetAngular#readme",
+  "bugs": {
+    "url": "https://github.com/3ollnai/ProjetAngular/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/3ollnai/ProjetAngular.git"
+  },
   "license": "ISC",
   "author": "",
   "type": "commonjs",
