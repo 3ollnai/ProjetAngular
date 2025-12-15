@@ -1,14 +1,43 @@
 import { createAction, props } from '@ngrx/store';
-import { Product } from '../../services/shop-api.service';
+import { Product } from '../../../mocks/data';
 
-export const loadProducts = createAction(
-  '[Products] Load',
-  props<{ page?: number; page_size?: number; min_rating?: number; ordering?: string }>()
+export interface ProductsQuery {
+  page: number;
+  pageSize: number;
+  minRating?: number;
+  ordering?: string;
+}
+
+export interface PaginatedProducts {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: Product[];
+}
+
+export const loadProducts = createAction('[Products] Load Products', props<ProductsQuery>());
+
+export const loadProductsSuccess = createAction(
+  '[Products] Load Products Success',
+  props<{ data: PaginatedProducts }>()
 );
 
-export const loadProductsSuccess = createAction('[Products] Load Success', props<{ count: number; results: Product[] }>());
-export const loadProductsFailure = createAction('[Products] Load Failure', props<{ error: any }>());
+export const loadProductsFailure = createAction(
+  '[Products] Load Products Failure',
+  props<{ error: string }>()
+);
+
+export const selectProduct = createAction('[Products] Select Product', props<{ id: number }>());
 
 export const loadRating = createAction('[Products] Load Rating', props<{ id: number }>());
-export const loadRatingSuccess = createAction('[Products] Load Rating Success', props<{ id: number; avg_rating: number; count: number }>());
-export const loadRatingFailure = createAction('[Products] Load Rating Failure', props<{ error: any }>());
+
+export const loadRatingSuccess = createAction(
+  '[Products] Load Rating Success',
+  props<{ productId: number; avgRating: number; count: number }>()
+);
+
+export const loadRatingFailure = createAction(
+  '[Products] Load Rating Failure',
+  props<{ error: string }>()
+);
+

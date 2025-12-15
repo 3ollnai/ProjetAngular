@@ -6,7 +6,7 @@
     "schematicCollections": [
       "angular-eslint"
     ],
-    "analytics": "c8c6bef2-eefd-4de7-b2cf-459a5e253312"
+    "analytics": false
   },
   "newProjectRoot": "projects",
   "projects": {
@@ -32,6 +32,7 @@
               }
             ],
             "styles": [
+              "src/custom-theme.scss",
               "src/styles.css"
             ]
           },

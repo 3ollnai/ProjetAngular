@@ -1,23 +1,25 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../environments/environment';
+import { ProductsQuery, PaginatedProducts } from '../state/products/products.actions';
 
-export interface TokenResponse {
+export interface LoginRequest {
+  username: string;
+  password: string;
+}
+
+export interface LoginResponse {
   access: string;
-  refresh?: string;
+  refresh: string;
 }
 
-export interface Product {
-  id: number;
-  name: string;
-  price: number;
-  created_at?: string;
-  ratings?: any[];
+export interface RefreshRequest {
+  refresh: string;
 }
 
-export interface ProductsResponse {
-  count: number;
-  results: Product[];
+export interface RefreshResponse {
+  access: string;
 }
 
 export interface RatingResponse {
@@ -26,32 +28,40 @@ export interface RatingResponse {
   count: number;
 }
 
-@Injectable({ providedIn: 'root' })
+@Injectable({
+  providedIn: 'root',
+})
 export class ShopApiService {
+  private apiUrl = environment.apiBaseUrl;
+
   constructor(private http: HttpClient) {}
 
-  login(username: string, password: string): Observable<TokenResponse> {
-    return this.http.post<TokenResponse>('/api/auth/token/', { username, password });
+  login(username: string, password: string): Observable<LoginResponse> {
+    return this.http.post<LoginResponse>(`${this.apiUrl}auth/token/`, { username, password });
   }
 
-  refresh(refresh: string) {
-    return this.http.post<TokenResponse>('/api/auth/token/refresh/', { refresh });
+  refreshToken(refresh: string): Observable<RefreshResponse> {
+    return this.http.post<RefreshResponse>(`${this.apiUrl}auth/token/refresh/`, { refresh });
   }
 
-  getProducts(params: {
-    page?: number;
-    page_size?: number;
-    min_rating?: number;
-    ordering?: string;
-  }) {
-    let httpParams = new HttpParams();
-    Object.entries(params).forEach(([k, v]) => {
-      if (v !== undefined && v !== null) httpParams = httpParams.set(k, String(v));
-    });
-    return this.http.get<ProductsResponse>('/api/products/', { params: httpParams });
+  getProducts(query: ProductsQuery): Observable<PaginatedProducts> {
+    let params = new HttpParams()
+      .set('page', query.page.toString())
+      .set('page_size', query.pageSize.toString());
+    
+    if (query.minRating !== undefined) {
+      params = params.set('min_rating', query.minRating.toString());
+    }
+    
+    if (query.ordering) {
+      params = params.set('ordering', query.ordering);
+    }
+
+    return this.http.get<PaginatedProducts>(`${this.apiUrl}products/`, { params });
   }
 
-  getRating(productId: number) {
-    return this.http.get<RatingResponse>(`/api/products/${productId}/rating/`);
+  getProductRating(id: number): Observable<RatingResponse> {
+    return this.http.get<RatingResponse>(`${this.apiUrl}products/${id}/rating/`);
   }
 }
+

@@ -2,6 +2,7 @@
 import { http, HttpResponse } from 'msw';
 import { products } from './data';
 import { paginate, avgRating } from './utils';
+import { mockOrders, mockTrackingHistory } from './orders';
 
 const API = '/api';
 
@@ -52,5 +53,89 @@ export const handlers = [
       { product_id: id, avg_rating: avgRating(p.ratings), count: p.ratings.length },
       { status: 200 },
     );
+  }),
+
+  // Product details: GET /api/products/:id/
+  http.get(`${API}/products/:id/`, async ({ params }) => {
+    const id = Number(params['id']);
+    const p = products.find((x) => x.id === id);
+    if (!p) return HttpResponse.json({ detail: 'Not found.' }, { status: 404 });
+    return HttpResponse.json(p, { status: 200 });
+  }),
+
+  // Cart validation: POST /api/cart/validate/
+  http.post(`${API}/cart/validate/`, async ({ request }) => {
+    const body = (await request.json()) as { items?: Array<{ product_id: number; quantity: number }> };
+    const total = body?.items?.reduce((sum: number, item: any) => {
+      const product = products.find((p) => p.id === item.product_id);
+      return sum + (product?.price || 0) * (item.quantity || 0);
+    }, 0) || 0;
+
+    return HttpResponse.json(
+      {
+        subtotal: total,
+        shipping: 0,
+        total: total,
+        valid: true,
+      },
+      { status: 200 }
+    );
+  }),
+
+  // Order: POST /api/order/
+  http.post(`${API}/order/`, async ({ request }) => {
+    const body = (await request.json()) as any;
+    const orderNumber = `ORD-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+    const trackingNumber = `TRK${Math.floor(Math.random() * 1000000)}`;
+    const estimatedDelivery = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
+
+    return HttpResponse.json(
+      {
+        orderNumber,
+        status: 'confirmed',
+        message: 'Order placed successfully',
+        trackingNumber,
+        carrier: 'Colissimo',
+        estimatedDelivery,
+      },
+      { status: 201 }
+    );
+  }),
+
+  // Get order: GET /api/orders/:orderNumber/
+  http.get(`${API}/orders/:orderNumber/`, async ({ params }) => {
+    const orderNumber = params['orderNumber'] as string;
+    const order = mockOrders.find((o) => o.orderNumber === orderNumber);
+    if (!order) {
+      return HttpResponse.json({ detail: 'Order not found.' }, { status: 404 });
+    }
+    return HttpResponse.json(order, { status: 200 });
+  }),
+
+  // Get order tracking: GET /api/orders/:orderNumber/tracking/
+  http.get(`${API}/orders/:orderNumber/tracking/`, async ({ params }) => {
+    const orderNumber = params['orderNumber'] as string;
+    const order = mockOrders.find((o) => o.orderNumber === orderNumber);
+    if (!order) {
+      return HttpResponse.json({ detail: 'Order not found.' }, { status: 404 });
+    }
+
+    const trackingHistory = mockTrackingHistory[orderNumber] || [];
+    return HttpResponse.json(
+      {
+        orderNumber,
+        status: order.status,
+        trackingNumber: order.trackingNumber,
+        carrier: order.carrier,
+        estimatedDelivery: order.estimatedDelivery,
+        trackingHistory,
+      },
+      { status: 200 }
+    );
+  }),
+
+  // Get user orders: GET /api/orders/
+  http.get(`${API}/orders/`, async () => {
+    return HttpResponse.json(mockOrders, { status: 200 });
   }),
 ];

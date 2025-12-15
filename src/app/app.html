@@ -1,6 +1,37 @@
-<header class="p-4 border-b">
-  <strong>My Shop</strong>
+<div class="app-shell" [class.app-shell--compact]="!(isAuthenticated$ | async)">
+  @if (isAuthenticated$ | async) {
+    <header class="app-header">
+      <div class="brand">
+        <span class="brand-mark">MS</span>
+        <div class="brand-copy">
+          <span class="brand-title">My Shop</span>
+          <small>Maison e-commerce premium</small>
+        </div>
+        <div class="status-indicator">
+          <span class="status-dot"></span>
+          En ligne
+        </div>
+      </div>
+
+      <nav class="app-nav">
+        <a routerLink="/app/products" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Catalogue</a>
+        <a routerLink="/app/orders" routerLinkActive="active">Mes commandes</a>
+        <a routerLink="/app/orders/track" routerLinkActive="active">Suivi de commande</a>
+        <a routerLink="/app/rating" routerLinkActive="active">Avis clients</a>
+        <a routerLink="/dev" routerLinkActive="active">Zone dev</a>
+      </nav>
+
+      <div class="header-actions">
+        <app-cart-icon></app-cart-icon>
+        <button type="button" class="secondary-cta" (click)="logout()">Logout</button>
+        <button type="button" class="primary-cta" routerLink="/app/products">
+          Découvrir la boutique
+        </button>
+      </div>
 </header>
-<main class="p-4">
-  <router-outlet></router-outlet>
-</main>
+  }
+
+  <main class="app-main" [class.app-main--full]="!(isAuthenticated$ | async)">
+    <router-outlet></router-outlet>
+  </main>
+</div>
